@@ -1,0 +1,59 @@
+<html>
+    <head>
+        <title>My To-do App</title>
+        <style>
+            .hidden{
+              display: none;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="error" class="hidden">Something went wrong!</div>
+
+        <p>
+            <form method="post" action="/todos/create_sync">
+                <input type="text" id="descrip_sync" name="descrip_sync" />
+                <input type="submit" value="Create Sync'ly" />
+            </form>
+        </p>
+        
+        <p>
+            <form id="form_async">
+                <input type="text" id="descrip_async" name="descrip_async" />
+                <input type="submit" value="Create Async'ly" />
+            </form>
+        </p>
+
+        <ul id="todos">
+            {% for d in data %}
+                <li>{{ d.description}}</li>
+            {% endfor %}
+        </ul>
+
+        <script>
+            const descInput = document.getElementById('descrip_async');
+            document.getElementById('form_async').onsubmit = function(e) {
+              e.preventDefault();
+              const desc = descInput.value;
+              descInput.value = '';
+              fetch('/todos/create_async', {
+                method: 'POST',
+                body: JSON.stringify({'description': desc,}),
+                headers: {'Content-Type': 'application/json',}
+              })
+              .then(response => response.json())
+              .then(jsonResponse => {
+                console.log('response', jsonResponse);
+                li = document.createElement('li');
+                li.innerText = jsonResponse['description'];
+                document.getElementById('todos').appendChild(li);
+                document.getElementById('error').className = 'hidden';
+              })
+              .catch(function() {
+                document.getElementById('error').className = '';
+              })
+            }
+          </script>
+    </body>
+</html>
