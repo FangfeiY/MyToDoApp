@@ -8,17 +8,10 @@ class TodoItem(db.Model):
     def __repr__(self):
         return f'<Todo {self.id} {self.description}>'
 
-db.create_all()
-
-# Add some sample data if no data in db
-current_items_count = TodoItem.query.count()
-
-if current_items_count == 0:
-    for num in range(6):
-        item = TodoItem(description=f'To do {num}')
-        db.session.add(item)
-
-    db.session.commit()
+# No longer using SQLAlchemy to manage db tables
+# Replaced by using Flask-Migrate to do the work
+# Run "flask db migrate"
+#db.create_all()
 
 
 
