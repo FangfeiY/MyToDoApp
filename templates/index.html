@@ -5,9 +5,32 @@
             .hidden{
               display: none;
             }
+            
             .lists-wrapper, .todos-wrapper {
               display: inline-block;
               vertical-align: top;
+            }
+
+            /* .check-completed{
+              float: left;
+            } */
+            ul {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+              width: 300px;
+            }
+            li {
+              clear: both;
+            }
+            li button {
+              -webkit-appearance: none;
+              border: none;
+              outline: none;
+              color: red;
+              float: right;
+              cursor: pointer;
+              font-size: 20px;
             }
         </style>
     </head>
@@ -33,9 +56,10 @@
 
         <ul id="todos">
           {% for d in data %}
-              <li>
+              <li id="li_id_{{d.id}}">
                 <input class="check-completed" data-id="{{ d.id }}" type="checkbox" {% if d.completed %} checked {% endif %} />
                 {{ d.description}}
+                <button class="delete" data-id="{{d.id}}">&cross;</button>
               </li>
           {% endfor %}
         </ul>
@@ -68,6 +92,29 @@
               }
             }
 
+            // Delete todo item event
+            const delButtons = document.querySelectorAll('.delete');
+            for (let i = 0; i < delButtons.length; i++){
+              const delButton = delButtons[i];
+              delButton.onclick = function(e){
+                const todoId = e.target.dataset['id'];
+                fetch('/todos/' + todoId, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(jsonResponse => {
+                  console.log('response', jsonResponse);
+                  
+                  ul = document.getElementById('todos');
+                  ul.removeChild(document.getElementById('li_id_' + todoId));
+                  document.getElementById('error').className = 'hidden';
+                })
+                .catch(function() {
+                  document.getElementById('error').className = '';
+                })
+              }
+            }
+
             // Form submit event
             const descInput = document.getElementById('descrip_async');
             document.getElementById('form_async').onsubmit = function(e) {
@@ -87,11 +134,14 @@
                 newCheckbox.type = 'checkbox';
                 newCheckbox.className = 'check-completed';
                 newCheckbox.checked = false;
+                //newCheckbox.style.float = 'left';
                 newCheckbox. setAttribute('data-id', jsonResponse['id']);
 
                 li = document.createElement('li');
-                li.innerText = jsonResponse['description'];
+                li.id = 'li_id_' + jsonResponse['id']
                 li.appendChild(newCheckbox);
+                li.innerText = jsonResponse['description'];
+                
 
                 document.getElementById('todos').appendChild(li);
                 document.getElementById('error').className = 'hidden';

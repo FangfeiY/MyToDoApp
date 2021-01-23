@@ -51,20 +51,39 @@ def create_todo(input_descrip, response_body):
 
     return error
 
+# Can also use '/todos/<todo_id>/set-completed' and create the function with argument like "def set_completed_todo(todo_id):""
 @app.route('/todos/set-completed', methods=['POST'])
 def set_completed_todo():
-  try:
-    todo_id = request.get_json()['todoId']
-    completed = request.get_json()['completed']
-    print('completed', completed)
-    todo = TodoItem.query.get(todo_id)
-    todo.completed = completed
-    db.session.commit()
-  except:
-    db.session.rollback()
-  finally:
-    db.session.close()
-  return redirect(url_for('index'))
+    try:
+        todo_id = request.get_json()['todoId']
+        completed = request.get_json()['completed']
+        print('completed', completed)
+        todo = TodoItem.query.get(todo_id)
+        todo.completed = completed
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
+    return redirect(url_for('index'))
+
+@app.route('/todos/<todo_id>', methods=['DELETE'])
+def delete(todo_id):
+    error = False
+    try:
+        print('Item to delete: ', todo_id)
+        TodoItem.query.filter_by(id=todo_id).delete()
+        db.session.commit()
+    except:
+        error = True
+        db.session.rollback()
+    finally:
+        db.session.close()
+
+    if error:
+        abort(500)
+    else:
+        return jsonify({ 'success': True })
 
 if __name__ == '__main__':
     app.run()
