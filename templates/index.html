@@ -57,7 +57,7 @@
         <ul id="todos">
           {% for d in data %}
               <li id="li_id_{{d.id}}">
-                <input class="check-completed" data-id="{{ d.id }}" type="checkbox" {% if d.completed %} checked {% endif %} />
+                <input class="check-completed" data-id="{{ d.id }}" type="checkbox" onchange="checkboxCheckedChanged(this)" {% if d.completed %} checked {% endif %} />
                 {{ d.description}}
                 <button class="delete" data-id="{{d.id}}">&cross;</button>
               </li>
@@ -67,29 +67,35 @@
 
         <script>
             // Completed checkbox event
-            const checkboxes = document.querySelectorAll('.check-completed');
-            for (let i = 0; i < checkboxes.length; i++){
-              const checkbox = checkboxes[i];
-              checkbox.onchange = function(e){
-                const newCompleted = e.target.checked;
-                const todoId = e.target.dataset['id'];
-                fetch('/todos/set-completed', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                      'todoId': todoId,
-                      'completed': newCompleted
-                    }),
-                    headers: {
-                      'Content-Type': 'application/json'
-                    }
-                  })
-                  .then(function() {
-                    document.getElementById('error').className = 'hidden';
-                  })
-                  .catch(function() {
-                    document.getElementById('error').className = '';
-                  })
-              }
+            // Add onchange event when loading the page. Can't apply to todo items created in the async way.
+            // const checkboxes = document.querySelectorAll('.check-completed');
+            // for (let i = 0; i < checkboxes.length; i++){
+            //   const checkbox = checkboxes[i];
+            //   checkbox.onchange = () => {checkboxCheckedChanged(checkbox)}
+            // }
+
+            function checkboxCheckedChanged(checkbox) {
+              console.log('checkbox', checkbox);
+              console.log(checkbox.dataset['id']);
+
+              const newCompleted = checkbox.checked;
+              const todoId = checkbox.dataset['id'];
+              fetch('/todos/set-completed', {
+                  method: 'POST',
+                  body: JSON.stringify({
+                    'todoId': todoId,
+                    'completed': newCompleted
+                  }),
+                  headers: {
+                    'Content-Type': 'application/json'
+                  }
+                })
+                .then(function() {
+                  document.getElementById('error').className = 'hidden';
+                })
+                .catch(function() {
+                  document.getElementById('error').className = '';
+                })
             }
 
             // Delete todo item event
@@ -134,14 +140,16 @@
                 newCheckbox.type = 'checkbox';
                 newCheckbox.className = 'check-completed';
                 newCheckbox.checked = false;
-                //newCheckbox.style.float = 'left';
-                newCheckbox. setAttribute('data-id', jsonResponse['id']);
+                newCheckbox.dataset.id = jsonResponse['id'];
+                // Or: newCheckbox.setAttribute('data-id',jsonResponse['id']);
+                console.log('New checkbox data id: ', newCheckbox.dataset['id']);
+
+                newCheckbox.onchange = () => {checkboxCheckedChanged(newCheckbox)};
 
                 li = document.createElement('li');
                 li.id = 'li_id_' + jsonResponse['id']
-                li.appendChild(newCheckbox);
                 li.innerText = jsonResponse['description'];
-                
+                li.appendChild(newCheckbox);
 
                 document.getElementById('todos').appendChild(li);
                 document.getElementById('error').className = 'hidden';
