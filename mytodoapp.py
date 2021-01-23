@@ -10,7 +10,7 @@ def index():
         {'description':'To do 2'},
         {'description':'To do 3'}
     ]
-    return render_template('index.html', data=TodoItem.query.all())
+    return render_template('index.html', data=TodoItem.query.order_by('id').all())
 
 @app.route('/todos/create_sync', methods=['POST'])
 def create_todo_sync():
@@ -41,6 +41,7 @@ def create_todo(input_descrip, response_body):
         db.session.add(todo)
         db.session.commit()
         response_body['description'] = todo.description
+        response_body['id'] = todo.id
     except:
         error = True
         db.session.rollback()
@@ -49,6 +50,21 @@ def create_todo(input_descrip, response_body):
         db.session.close()
 
     return error
+
+@app.route('/todos/set-completed', methods=['POST'])
+def set_completed_todo():
+  try:
+    todo_id = request.get_json()['todoId']
+    completed = request.get_json()['completed']
+    print('completed', completed)
+    todo = TodoItem.query.get(todo_id)
+    todo.completed = completed
+    db.session.commit()
+  except:
+    db.session.rollback()
+  finally:
+    db.session.close()
+  return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run()
