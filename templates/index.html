@@ -37,6 +37,13 @@
 
     <body>
       <div class="lists-wrapper">
+        <h4>My Todo App</h4>
+
+        <form method="post" action="/todo_list/create_list">
+          <input type="text" id="list_txt" name="list_txt_name" />
+          <input type="submit" value="Create List" />
+        </form>
+
         <ul id="lists">
           {% for list in lists %}
           <li>
@@ -50,19 +57,16 @@
 
       <div class="todos-wrapper">
         <h4>{{ active_list.name }}</h4>
-        <p>
-          <form method="post" action="/todos/create_sync">
-              <input type="text" id="descrip_sync" name="descrip_sync" />
-              <input type="submit" value="Create Sync'ly" />
-          </form>
-        </p>
-      
-        <p>
-            <form id="form_async">
-                <input type="text" id="descrip_async" name="descrip_async" />
-                <input type="submit" value="Create Async'ly" />
-            </form>
-        </p>
+        
+        <form method="post" action="/todos/create_sync">
+            <input type="text" id="descrip_sync" name="descrip_sync" />
+            <input type="submit" value="Create Sync'ly" />
+        </form>
+        
+        <form id="form_async">
+            <input type="text" id="descrip_async" name="descrip_async" />
+            <input type="submit" value="Create Async'ly" />
+        </form>
 
         <div id="error" class="hidden">Something went wrong!</div>
 

@@ -89,5 +89,29 @@ def delete(todo_id):
     else:
         return jsonify({ 'success': True })
 
+@app.route('/todo_list/create_list', methods=['POST'])
+def create_list():
+    list_name = request.form.get('list_txt_name','')
+    error = False
+    list_id = 1
+
+    try:
+        todo_list = TodoList(name=list_name)
+        db.session.add(todo_list)
+        db.session.commit()
+        list_id = todo_list.id
+    except:
+        error = True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+
+    if error:
+        abort (500)
+    else:
+        return redirect(url_for('get_list_todos', list_id=list_id))
+
+
 if __name__ == '__main__':
     app.run()
