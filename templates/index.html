@@ -36,8 +36,20 @@
     </head>
 
     <body>
-      <div class="todos-wrapper">
+      <div class="lists-wrapper">
+        <ul id="lists">
+          {% for list in lists %}
+          <li>
+            <a href="/lists/{{ list.id }}">
+              {{ list.name }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
 
+      <div class="todos-wrapper">
+        <h4>{{ active_list.name }}</h4>
         <p>
           <form method="post" action="/todos/create_sync">
               <input type="text" id="descrip_sync" name="descrip_sync" />
@@ -55,11 +67,11 @@
         <div id="error" class="hidden">Something went wrong!</div>
 
         <ul id="todos">
-          {% for d in data %}
-              <li id="li_id_{{d.id}}">
-                <input class="check-completed" data-id="{{ d.id }}" type="checkbox" onchange="checkboxCheckedChanged(this)" {% if d.completed %} checked {% endif %} />
-                {{ d.description}}
-                <button class="delete" data-id="{{d.id}}">&cross;</button>
+          {% for todo in todos %}
+              <li id="li_id_{{todo.id}}">
+                <input class="check-completed" data-id="{{ todo.id }}" type="checkbox" onchange="checkboxCheckedChanged(this)" {% if todo.completed %} checked {% endif %} />
+                {{ todo.description }}
+                <button class="delete" data-id="{{todo.id}}">&cross;</button>
               </li>
           {% endfor %}
         </ul>

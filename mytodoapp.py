@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, url_for, jsonify, abort
 import sys
 from TodoDb import app,db
 from TodoItem import TodoItem
+from TodoList import TodoList
 
 @app.route('/')
 def index():
@@ -10,7 +11,10 @@ def index():
 
 @app.route('/lists/<list_id>')
 def get_list_todos(list_id):
-    return render_template('index.html', data=TodoItem.query.filter_by(list_id=list_id).order_by('id').all())
+    return render_template('index.html', 
+    todos=TodoItem.query.filter_by(list_id=list_id).order_by('id').all(),
+    lists=TodoList.query.order_by('id').all(),
+    active_list=TodoList.query.get(list_id))
 
 @app.route('/todos/create_sync', methods=['POST'])
 def create_todo_sync():
