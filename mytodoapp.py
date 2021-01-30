@@ -5,12 +5,12 @@ from TodoItem import TodoItem
 
 @app.route('/')
 def index():
-    todo_list = [
-        {'description':'To do 1'},
-        {'description':'To do 2'},
-        {'description':'To do 3'}
-    ]
-    return render_template('index.html', data=TodoItem.query.order_by('id').all())
+    return redirect(url_for('get_list_todos', list_id=1))
+    
+
+@app.route('/lists/<list_id>')
+def get_list_todos(list_id):
+    return render_template('index.html', data=TodoItem.query.filter_by(list_id=list_id).order_by('id').all())
 
 @app.route('/todos/create_sync', methods=['POST'])
 def create_todo_sync():
