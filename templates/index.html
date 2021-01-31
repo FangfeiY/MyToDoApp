@@ -44,14 +44,15 @@
           <input type="submit" value="Create List" />
         </form>
 
-        <form id="form_todo_list" method="post" action=#>
+        <form id="form_todo_list" method=# action=#>
           <ul id="lists">
             {% for list in lists %}
-            <li>
+            <li id="li_id_{{list.id}}">
               <input class="check-completed" data-id="{{ list.id }}" type="checkbox" onchange="listCheckboxCheckedChanged(this)" {% if list.completed %} checked {% endif %} />
               <a href="/lists/get_list_todos/{{ list.id }}">
                 {{ list.name }}
               </a>
+              <button class="delete" data-id="{{list.id}}" onclick="delListBtnClick(this);">&cross;</button>
             </li>
             {% endfor %}
           </ul>
@@ -79,7 +80,7 @@
               <li id="li_id_{{todo.id}}">
                 <input class="check-completed" data-id="{{ todo.id }}" type="checkbox" onchange="todoCheckboxCheckedChanged(this)" {% if todo.completed %} checked {% endif %} />
                 {{ todo.description }}
-                <button class="delete" data-id="{{todo.id}}">&cross;</button>
+                <button class="delete" data-id="{{todo.id}}" onclick="delItemBtnClick(this);">&cross;</button>
               </li>
           {% endfor %}
         </ul>
@@ -119,27 +120,23 @@
             }
 
             // Delete todo item event
-            const delButtons = document.querySelectorAll('.delete');
-            for (let i = 0; i < delButtons.length; i++){
-              const delButton = delButtons[i];
-              delButton.onclick = function(e){
-                const todoId = e.target.dataset['id'];
-                fetch('/todos/' + todoId, {
+            function delItemBtnClick(delItemBtn){
+                const todoId = delItemBtn.dataset['id'];
+                fetch('/todos/del_todo/' + todoId, {
                     method: 'DELETE'
                 })
                 .then(response => response.json())
                 .then(jsonResponse => {
                   console.log('response', jsonResponse);
                   
-                  ul = document.getElementById('todos');
-                  ul.removeChild(document.getElementById('li_id_' + todoId));
+                  const item = delItemBtn.parentElement;
+                  item.remove();
                   document.getElementById('error').className = 'hidden';
                 })
                 .catch(function() {
                   document.getElementById('error').className = '';
                 })
               }
-            }
 
             // Form submit event
             const descInput = document.getElementById('descrip_async');
@@ -176,6 +173,7 @@
 
                 document.getElementById('todos').appendChild(li);
                 document.getElementById('error').className = 'hidden';
+                window.location.reload(true);
               })
               .catch(function() {
                 document.getElementById('error').className = '';
@@ -188,26 +186,30 @@
               const listId = checkbox.dataset['id'];
 
               list_form = document.getElementById('form_todo_list');
+              list_form.method='post';
               list_form.action='/lists/set-completed?listId=' + listId + '&completed=' + completed;
               list_form.submit();
 
-              // fetch('/lists/set-completed', {
-              //     method: 'POST',
-              //     body: JSON.stringify({
-              //       'listId': listId,
-              //       'completed': completed
-              //     }),
-              //     headers: {
-              //       'Content-Type': 'application/json'
-              //     }
-              //   })
-              //   .then(function() {
-              //     document.getElementById('error').className = 'hidden';
-              //   })
-              //   .catch(function() {
-              //     document.getElementById('error').className = '';
-              //   })
             }
+
+            // Delete list event
+            function delListBtnClick(delListBtn){
+              const listId = delListBtn.dataset['id'];
+
+              fetch('/lists/del_list/' + listId, {
+                    method: 'DELETE'
+                })
+                .then(() => {
+                  const item = delListBtn.parentElement;
+                  item.remove();
+                  document.getElementById("error").className = "hidden";
+                  window.location.reload(true);
+                })
+                .catch(function() {
+                  document.getElementById('error').className = '';
+                })
+            }
+            
           </script>
     </body>
 </html>

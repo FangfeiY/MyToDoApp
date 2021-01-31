@@ -65,14 +65,15 @@ def set_completed_todo():
         db.session.rollback()
     finally:
         db.session.close()
-    return redirect(url_for('index'))
+    return redirect(url_for('get_list_todos', list_id=todo.id))
 
-@app.route('/todos/<todo_id>', methods=['DELETE'])
-def delete(todo_id):
+@app.route('/todos/del_todo/<todo_id>', methods=['DELETE'])
+def del_todo(todo_id):
     error = False
     try:
         print('Item to delete: ', todo_id)
-        TodoItem.query.filter_by(id=todo_id).delete()
+        todo = TodoItem.query.get(todo_id)
+        db.session.delete(todo)
         db.session.commit()
     except:
         error = True
@@ -133,6 +134,24 @@ def set_completed_list():
     finally:
         db.session.close()
     return redirect(url_for('get_list_todos', list_id=list_id))
+
+@app.route('/lists/del_list/<list_id>', methods=['DELETE'])
+def del_list_cascade(list_id):
+    error = False
+    try:
+        print('List to delete: ', list_id)
+        todo_list = TodoList.query.get(list_id)
+        db.session.delete(todo_list)
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
+
+    if error:
+        abort(500)
+    else:
+        return jsonify({ 'success': True })
 
 if __name__ == '__main__':
     app.run()
