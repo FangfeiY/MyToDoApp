@@ -9,43 +9,47 @@ def index():
     return redirect(url_for('get_list_todos', list_id=1))
     
 
-@app.route('/lists/<list_id>')
+@app.route('/lists/get_list_todos/<list_id>')
 def get_list_todos(list_id):
     return render_template('index.html', 
     todos=TodoItem.query.filter_by(list_id=list_id).order_by('id').all(),
     lists=TodoList.query.order_by('id').all(),
     active_list=TodoList.query.get(list_id))
 
-@app.route('/todos/create_sync', methods=['POST'])
-def create_todo_sync():
-    error = create_todo(request.form.get('descrip_sync',''), {})
+@app.route('/todos/create_sync/<list_id>', methods=['POST'])
+def create_todo_sync(list_id):
+    description = request.form.get('descrip_sync','')
+
+    error = create_todo(description, list_id, {})
 
     if error:
         abort (500)
     else:
-        return redirect(url_for('index'))
+        return redirect(url_for('get_list_todos', list_id=list_id))
 
 @app.route('/todos/create_async', methods=['POST'])
 def create_todo_async():
     response_body = {}
-    
-    error = create_todo(request.get_json()['description'], response_body)
+    description = request.get_json()['description']
+    list_id = request.get_json()['list_id']
+
+    error = create_todo(description, list_id, response_body)
     
     if error:
         abort (500)
     else:
         return jsonify(response_body)
 
-def create_todo(input_descrip, response_body):
+def create_todo(input_descrip, list_id, response_body):
     error = False
 
     try:
         input_descrip = input_descrip
-        todo = TodoItem(description=input_descrip)
+        todo = TodoItem(description=input_descrip, list_id=list_id)
         db.session.add(todo)
         db.session.commit()
         response_body['description'] = todo.description
-        response_body['id'] = todo.id
+        response_body['item_id'] = todo.id
     except:
         error = True
         db.session.rollback()

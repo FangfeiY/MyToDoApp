@@ -47,7 +47,7 @@
         <ul id="lists">
           {% for list in lists %}
           <li>
-            <a href="/lists/{{ list.id }}">
+            <a href="/lists/get_list_todos/{{ list.id }}">
               {{ list.name }}
             </a>
           </li>
@@ -58,7 +58,7 @@
       <div class="todos-wrapper">
         <h4>{{ active_list.name }}</h4>
         
-        <form method="post" action="/todos/create_sync">
+        <form method="post" action="/todos/create_sync/{{ active_list.id }}">
             <input type="text" id="descrip_sync" name="descrip_sync" />
             <input type="submit" value="Create Sync'ly" />
         </form>
@@ -145,7 +145,10 @@
               descInput.value = '';
               fetch('/todos/create_async', {
                 method: 'POST',
-                body: JSON.stringify({'description': desc,}),
+                body: JSON.stringify({
+                  'description': desc, 
+                  'list_id': '{{ active_list.id }}'
+                }),
                 headers: {'Content-Type': 'application/json',}
               })
               .then(response => response.json())
@@ -156,14 +159,14 @@
                 newCheckbox.type = 'checkbox';
                 newCheckbox.className = 'check-completed';
                 newCheckbox.checked = false;
-                newCheckbox.dataset.id = jsonResponse['id'];
+                newCheckbox.dataset.id = jsonResponse['item_id'];
                 // Or: newCheckbox.setAttribute('data-id',jsonResponse['id']);
                 console.log('New checkbox data id: ', newCheckbox.dataset['id']);
 
                 newCheckbox.onchange = () => {checkboxCheckedChanged(newCheckbox)};
 
                 li = document.createElement('li');
-                li.id = 'li_id_' + jsonResponse['id']
+                li.id = 'li_id_' + jsonResponse['item_id']
                 li.innerText = jsonResponse['description'];
                 li.appendChild(newCheckbox);
 
