@@ -39,20 +39,24 @@
       <div class="lists-wrapper">
         <h4>My Todo App</h4>
 
-        <form method="post" action="/todo_list/create_list">
+        <form method="post" action="/lists/create_list">
           <input type="text" id="list_txt" name="list_txt_name" />
           <input type="submit" value="Create List" />
         </form>
 
-        <ul id="lists">
-          {% for list in lists %}
-          <li>
-            <a href="/lists/get_list_todos/{{ list.id }}">
-              {{ list.name }}
-            </a>
-          </li>
-          {% endfor %}
-        </ul>
+        <form id="form_todo_list" method="post" action=#>
+          <ul id="lists">
+            {% for list in lists %}
+            <li>
+              <input class="check-completed" data-id="{{ list.id }}" type="checkbox" onchange="listCheckboxCheckedChanged(this)" {% if list.completed %} checked {% endif %} />
+              <a href="/lists/get_list_todos/{{ list.id }}">
+                {{ list.name }}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </form>
+        
       </div>
 
       <div class="todos-wrapper">
@@ -176,6 +180,33 @@
               .catch(function() {
                 document.getElementById('error').className = '';
               })
+            }
+            
+            // Todo list check box oncheck event
+            function listCheckboxCheckedChanged(checkbox) {
+              const completed = checkbox.checked;
+              const listId = checkbox.dataset['id'];
+
+              list_form = document.getElementById('form_todo_list');
+              list_form.action='/lists/set-completed?listId=' + listId + '&completed=' + completed;
+              list_form.submit();
+
+              // fetch('/lists/set-completed', {
+              //     method: 'POST',
+              //     body: JSON.stringify({
+              //       'listId': listId,
+              //       'completed': completed
+              //     }),
+              //     headers: {
+              //       'Content-Type': 'application/json'
+              //     }
+              //   })
+              //   .then(function() {
+              //     document.getElementById('error').className = 'hidden';
+              //   })
+              //   .catch(function() {
+              //     document.getElementById('error').className = '';
+              //   })
             }
           </script>
     </body>

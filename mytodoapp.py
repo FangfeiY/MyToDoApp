@@ -7,14 +7,6 @@ from TodoList import TodoList
 @app.route('/')
 def index():
     return redirect(url_for('get_list_todos', list_id=1))
-    
-
-@app.route('/lists/get_list_todos/<list_id>')
-def get_list_todos(list_id):
-    return render_template('index.html', 
-    todos=TodoItem.query.filter_by(list_id=list_id).order_by('id').all(),
-    lists=TodoList.query.order_by('id').all(),
-    active_list=TodoList.query.get(list_id))
 
 @app.route('/todos/create_sync/<list_id>', methods=['POST'])
 def create_todo_sync(list_id):
@@ -93,7 +85,7 @@ def delete(todo_id):
     else:
         return jsonify({ 'success': True })
 
-@app.route('/todo_list/create_list', methods=['POST'])
+@app.route('/lists/create_list', methods=['POST'])
 def create_list():
     list_name = request.form.get('list_txt_name','')
     error = False
@@ -116,6 +108,31 @@ def create_list():
     else:
         return redirect(url_for('get_list_todos', list_id=list_id))
 
+@app.route('/lists/get_list_todos/<list_id>')
+def get_list_todos(list_id):
+    return render_template('index.html', 
+    todos=TodoItem.query.filter_by(list_id=list_id).order_by('id').all(),
+    lists=TodoList.query.order_by('id').all(),
+    active_list=TodoList.query.get(list_id))
+
+@app.route('/lists/set-completed', methods=['POST'])
+def set_completed_list():
+    try:
+        list_id = request.args.get('listId')
+        completed = request.args.get('completed') == 'true'
+
+        todo_list = TodoList.query.get(list_id)
+        todo_list.completed = completed
+
+        for todo in todo_list.todos:
+            todo.completed = completed
+        
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
+    return redirect(url_for('get_list_todos', list_id=list_id))
 
 if __name__ == '__main__':
     app.run()
